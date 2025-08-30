@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22.x'
+          cache: true
+
+      - name: Vet and test
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: Build cross-platform binaries
+        run: |
+          make clean
+          make build-all
+          make package
+          make checksums
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: typematic-binaries
+          path: dist/*
